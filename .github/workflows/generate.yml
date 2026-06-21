@@ -2,8 +2,8 @@ name: Generate and Upload Reel
 
 on:
   schedule:
-    - cron: "0 14 * * *"   # ~morning Mountain Time
-    - cron: "0 2 * * *"    # ~evening Mountain Time
+    - cron: "30 18 * * *"   # ~morning Mountain Time
+    - cron: "30 1 * * *"    # ~evening Mountain Time
   workflow_dispatch:
 
 jobs:
