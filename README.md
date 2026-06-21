@@ -52,3 +52,31 @@ GitHub's free infrastructure.
 ---
 
 ## Running it manually (for testing, or one-off videos)
+---
+
+## Didn't like a scheduled video? Quick re-run
+
+If you decide not to approve a scheduled video and want a fresh take on
+the **same topic**, run this directly (replace the topic with whatever
+the rejected video was about):
+
+```
+python make_reel.py --topic "Mothman"
+```
+
+This generates a brand new script, voice, visuals, and music for that
+topic and uploads it as private, same as a scheduled run - you'll get
+the usual phone notification with the approve button. Because of the
+duplicate-content tracking, the new script will automatically avoid
+repeating the rejected one's facts and angle.
+
+This does **not** affect `topics_progress.txt`, so it won't skip or
+repeat any topics in the scheduled rotation - it's a fully separate,
+one-off run alongside the regular schedule.
+
+If you'd rather skip ahead to a *different* topic instead of redoing
+the same one, just swap in any topic from `topics.txt`:
+
+\`\`\`
+python make_reel.py --topic "The Jersey Devil"
+\`\`\`
