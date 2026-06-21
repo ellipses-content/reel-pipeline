@@ -1,0 +1,55 @@
+name: Generate and Upload Reel
+
+on:
+  schedule:
+    - cron: "0 14 * * *"   # ~morning Mountain Time
+    - cron: "0 2 * * *"    # ~evening Mountain Time
+  workflow_dispatch:
+
+jobs:
+  generate-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install Python packages
+        run: pip install -r requirements.txt
+
+      - name: Fix known MoviePy/Pillow compatibility issue
+        run: |
+          RESIZE_FILE=$(python -c "import moviepy.video.fx.resize as r; print(r.__file__)")
+          sed -i 's/Image.ANTIALIAS/Image.LANCZOS/g' "$RESIZE_FILE"
+
+      - name: Recreate .env file from GitHub Secrets
+        run: |
+          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
+          echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}" >> .env
+          echo "JAMENDO_CLIENT_ID=${{ secrets.JAMENDO_CLIENT_ID }}" >> .env
+          echo "NTFY_TOPIC=${{ secrets.NTFY_TOPIC }}" >> .env
+          echo "YOUTUBE_CLIENT_ID=${{ secrets.YOUTUBE_CLIENT_ID }}" >> .env
+          echo "YOUTUBE_CLIENT_SECRET=${{ secrets.YOUTUBE_CLIENT_SECRET }}" >> .env
+
+      - name: Recreate YouTube login token from secret
+        run: echo "${{ secrets.YOUTUBE_TOKEN_B64 }}" | base64 -d > youtube_token.pickle
+
+      - name: Run the pipeline
+        run: python scheduled_run.py
+
+      - name: Commit updated progress tracking
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add topics_progress.txt scheduled_run_log.txt
+          git diff --staged --quiet || git commit -m "Update progress tracking [automated]"
+          git push
