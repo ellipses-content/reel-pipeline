@@ -55,6 +55,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add topics_progress.txt scheduled_run_log.txt
+          git add topics_progress.txt scheduled_run_log.txt script_history.json
           git diff --staged --quiet || git commit -m "Update progress tracking [automated]"
           git push

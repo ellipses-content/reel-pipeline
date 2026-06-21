@@ -4,8 +4,7 @@ SCRIPT WRITER
 What this file does, in plain English:
     Takes a topic and asks Claude to write a short video script, plus
     helper functions that auto-suggest a visual search term, a music
-    mood, and a narration voice - all based on the topic, so the whole
-    pipeline can run from just one word with no manual choices needed.
+    mood, and a narration voice.
 
 How it fits in the pipeline:
     This is STEP 1. write_script's output gets handed to
@@ -18,6 +17,7 @@ What you need for this to work:
 import os
 import anthropic
 from dotenv import load_dotenv
+from script_history import get_past_scripts, save_script
 
 load_dotenv()
 
@@ -25,15 +25,41 @@ load_dotenv()
 def write_script(topic: str, target_seconds: int = 35) -> str:
     """
     Asks Claude to write a short narration script for a faceless video.
+
+    Duplicate-content avoidance:
+        Before writing, this checks script_history.py for any past
+        scripts on this exact topic. If found, it tells Claude what's
+        already been covered and asks for a different angle, so a
+        topic that comes up again doesn't produce a near-identical
+        video to one already posted.
     """
+
     target_words = int(target_seconds * 2.5)
 
     client = anthropic.Anthropic(
         api_key=os.environ.get("ANTHROPIC_API_KEY")
     )
 
-    prompt = f"""Write a short-form video narration script about: {topic}
+    past_scripts = get_past_scripts(topic)
 
+    if past_scripts:
+        past_context = "\n\n---\n\n".join(past_scripts[:2])
+        history_instructions = f"""
+
+IMPORTANT: This topic has been covered before. Here are the most recent
+script(s) already used - do NOT repeat the same facts, hook, or angle.
+Find different specific facts, a different opening hook, and a different
+overall angle on the topic:
+
+{past_context}
+
+---
+"""
+    else:
+        history_instructions = ""
+
+    prompt = f"""Write a short-form video narration script about: {topic}
+{history_instructions}
 Rules:
 - Around {target_words} words total (this is a {target_seconds}-second video)
 - Strong hook in the first sentence - something that makes someone stop scrolling
@@ -50,6 +76,9 @@ Rules:
     )
 
     script_text = message.content[0].text.strip()
+
+    save_script(topic, script_text)
+
     return script_text
 
 
@@ -94,13 +123,6 @@ def suggest_music_mood(topic: str) -> str:
     """
     Asks Claude for a mood/genre keyword to search background music
     for, based on the video's topic.
-
-    Important: Jamendo's search matches tags fairly literally, so
-    multi-word or unusual phrases (like "mysterious ambient") often
-    return zero results even when the individual words would work
-    fine alone. To keep results reliable, we constrain Claude to pick
-    from a known list of single, common tags that Jamendo's catalog
-    actually uses heavily.
     """
     client = anthropic.Anthropic(
         api_key=os.environ.get("ANTHROPIC_API_KEY")
