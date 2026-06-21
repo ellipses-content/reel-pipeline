@@ -1,0 +1,11 @@
+# This file tells GitHub "never save these files/folders."
+# Why: .env has your private API keys, and temp/output are just
+# generated files - no need to clutter your repository with them.
+
+.env
+temp/
+output/
+__pycache__/
+*.pyc
+youtube_token.pickle
+openverse_credentials.json

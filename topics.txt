@@ -1,0 +1,70 @@
+# TOPICS LIST
+# -------------
+# One topic per line. The scheduler works through this list in order,
+# two topics per day (morning and evening), and tracks progress in
+# topics_progress.txt so it knows where it left off even if your
+# computer restarts.
+#
+# Feel free to edit this list anytime - add, remove, or reorder topics.
+# Lines starting with # are ignored (like this one).
+
+Bigfoot
+The Loch Ness Monster
+Mothman
+The Jersey Devil
+Chupacabra
+The Yeti
+The Skinwalker
+Dogman
+Lake Champlain's Champ
+The Flatwoods Monster
+The Dover Demon
+The Beast of Bray Road
+Ogopogo
+The Mongolian Death Worm
+The Wendigo
+The Fresno Nightcrawler
+The Loveland Frog
+The Honey Island Swamp Monster
+The Pope Lick Monster
+The Goatman
+The Black-Eyed Children
+Sea Serpents
+The Thunderbird
+The Sheepsquatch
+The Lizard Man of Scape Ore Swamp
+The Mokele-Mbembe
+The Beast of Gevaudan
+The Hodag
+The Altamaha-ha
+The Trunko
+The Snallygaster
+The Bunyip
+The Tatzelwurm
+The Owlman of Mawnan
+The Kraken
+The Ozark Howler
+The Melon Heads
+The Beast of Bodmin Moor
+The Wampus Cat
+The Grootslang
+The Ahool
+The Skunk Ape
+The Enfield Horror
+The White River Monster
+The Cressie
+The Tahoe Tessie
+The Van Meter Visitor
+The Batsquatch
+The Devil Monkey
+The Popobawa
+The Adjule
+The Nandi Bear
+The Ropen
+The Beast of Exmoor
+The Loveland Lizard
+The Mngwa
+The Caddo Lake Monster
+The Pukwudgie
+The Slide-Rock Bolter
+The Wild Man of the Navidad
