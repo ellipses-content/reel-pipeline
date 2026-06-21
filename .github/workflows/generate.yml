@@ -31,6 +31,9 @@ jobs:
           RESIZE_FILE=$(python -c "import moviepy.video.fx.resize as r; print(r.__file__)")
           sed -i 's/Image.ANTIALIAS/Image.LANCZOS/g' "$RESIZE_FILE"
 
+      - name: Create required folders
+        run: mkdir -p temp output
+
       - name: Recreate .env file from GitHub Secrets
         run: |
           echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
