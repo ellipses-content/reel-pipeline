@@ -11,4 +11,5 @@ requests                    # used to download stock clips from Pexels
 moviepy==1.0.3               # stitches video, audio, and captions together
 python-dotenv                # loads your API keys from the .env file safely
 google-auth-oauthlib         # handles YouTube login/authorization
-google-api-python-client     # uploads videos to YouTube
+google-api-python-client     # uploads videos to YouTub
+openai-whisper

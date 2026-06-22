@@ -43,7 +43,7 @@ def _get_next_topic_index(total_topics: int) -> int:
     if not os.path.exists(PROGRESS_FILE):
         return 0
 
-    with open(PROGRESS_FILE, "r") as f:
+    with open(PROGRESS_FILE, "r", encoding="utf-8-sig") as f:
         last_index = int(f.read().strip())
 
     next_index = (last_index + 1) % total_topics

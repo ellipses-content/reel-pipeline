@@ -4,11 +4,13 @@ VIDEO ASSEMBLER
 What this file does, in plain English:
     Takes the voiceover audio + the background clips + the script text
     + optional background music, and stitches them into one finished
-    vertical video with captions burned in.
+    vertical video with captions burned in, precisely synced to the
+    actual audio using OpenAI's Whisper for word-level timestamps.
 
 What you need for this to work:
     - moviepy (free, installed via pip)
     - ffmpeg (free, must be installed separately on your system)
+    - openai-whisper (free, installed via pip) - used for caption sync
 """
 
 import os
@@ -44,15 +46,12 @@ def _fit_to_frame(clip):
 
 def _load_sources(video_paths: list, image_paths: list):
     sources = []
-
     for path in video_paths:
         clip = VideoFileClip(path)
         sources.append(_fit_to_frame(clip))
-
     for path in image_paths:
         clip = ImageClip(path, duration=10)
         sources.append(_fit_to_frame(clip))
-
     return sources
 
 
@@ -76,11 +75,9 @@ def _prepare_background(
 
     for i in range(num_segments):
         source = fitted_sources[i % len(fitted_sources)]
-
         reuse_count = i // len(fitted_sources)
         max_start = max(source.duration - cut_duration, 0)
         start_point = (reuse_count * 1.7) % (max_start + 0.01) if max_start > 0 else 0
-
         end_point = min(start_point + cut_duration, source.duration)
         segment = source.subclip(start_point, end_point)
 
@@ -96,12 +93,10 @@ def _prepare_background(
             width=TARGET_WIDTH,
             height=TARGET_HEIGHT,
         )
-
         segments.append(segment)
 
     background = concatenate_videoclips(segments, method="compose")
     background = background.subclip(0, target_duration)
-
     return background
 
 
@@ -111,6 +106,8 @@ def _draw_caption_image(text: str, width: int) -> np.ndarray:
         "C:/Windows/Fonts/arialbd.ttf",
         "C:/Windows/Fonts/Arial Bold.ttf",
         "C:/Windows/Fonts/arial.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
     ]
     font = None
     for path in font_paths:
@@ -158,24 +155,101 @@ def _draw_caption_image(text: str, width: int) -> np.ndarray:
     return np.array(img)
 
 
-def _split_into_caption_chunks(script_text: str, max_words: int = 10) -> list:
+def _get_word_timestamps(voiceover_path: str, script_text: str) -> list:
+    """
+    Uses OpenAI's Whisper (running locally, free) to get the exact
+    timestamp of every word in the voiceover audio.
+    """
+    try:
+        import whisper
+        print("      [captions] Running Whisper for precise caption sync...")
+        model = whisper.load_model("base")
+        result = model.transcribe(
+            voiceover_path,
+            word_timestamps=True,
+            condition_on_previous_text=False,
+        )
+
+        words = []
+        for segment in result.get("segments", []):
+            for word_info in segment.get("words", []):
+                word = word_info.get("word", "").strip()
+                if word:
+                    words.append({
+                        "word": word,
+                        "start": word_info["start"],
+                        "end": word_info["end"],
+                    })
+
+        if words:
+            print(f"      [captions] Got timestamps for {len(words)} words")
+            return words
+
+    except Exception as e:
+        print(f"      [captions] Whisper failed ({e}), falling back to word-count estimate")
+
+    return []
+
+
+def _make_captions_from_timestamps(word_timestamps: list, max_words: int = 8):
+    """
+    Groups Whisper's word-level timestamps into caption-sized chunks.
+    """
+    if not word_timestamps:
+        return []
+
+    caption_clips = []
+    chunk_words = []
+    chunk_start = None
+
+    for i, wt in enumerate(word_timestamps):
+        word = wt["word"]
+        start = wt["start"]
+        end = wt["end"]
+
+        if chunk_start is None:
+            chunk_start = start
+
+        chunk_words.append(word)
+
+        ends_sentence = any(p in word for p in [".", "!", "?", ","])
+        is_last = i == len(word_timestamps) - 1
+        at_max = len(chunk_words) >= max_words
+
+        if ends_sentence or is_last or at_max:
+            text = " ".join(chunk_words).strip()
+            duration = max(end - chunk_start, 0.1)
+
+            caption_image = _draw_caption_image(text, TARGET_WIDTH - 100)
+            caption = (
+                ImageClip(caption_image)
+                .set_position(("center", "center"))
+                .set_start(chunk_start)
+                .set_duration(duration)
+            )
+            caption_clips.append(caption)
+            chunk_words = []
+            chunk_start = None
+
+    return caption_clips
+
+
+def _make_captions_fallback(script_text: str, target_duration: float):
+    """
+    Original word-count-based caption timing, used as a fallback if
+    Whisper isn't available or fails.
+    """
     raw_pieces = re.split(r'(?<=[.!?,])\s+', script_text.strip())
     raw_pieces = [p.strip() for p in raw_pieces if p.strip()]
 
     chunks = []
     for piece in raw_pieces:
         words = piece.split()
-        if len(words) <= max_words:
+        if len(words) <= 10:
             chunks.append(piece)
         else:
-            for i in range(0, len(words), max_words):
-                chunks.append(" ".join(words[i:i + max_words]))
-
-    return chunks
-
-
-def _make_captions(script_text: str, target_duration: float):
-    chunks = _split_into_caption_chunks(script_text, max_words=10)
+            for i in range(0, len(words), 10):
+                chunks.append(" ".join(words[i:i + 10]))
 
     word_counts = [len(chunk.split()) for chunk in chunks]
     total_words = sum(word_counts)
@@ -206,18 +280,18 @@ def assemble_video(
     image_paths: list = None,
     music_path: str = None,
 ) -> str:
-    """
-    music_path: optional background music track. If provided, it's
-    layered under the voiceover at reduced volume and looped/trimmed
-    to match the video's length. If None, no background music.
-    """
     image_paths = image_paths or []
 
     voiceover = AudioFileClip(voiceover_path)
     duration = voiceover.duration
 
     background = _prepare_background(video_paths, image_paths, duration)
-    captions = _make_captions(script_text, duration)
+
+    word_timestamps = _get_word_timestamps(voiceover_path, script_text)
+    if word_timestamps:
+        captions = _make_captions_from_timestamps(word_timestamps)
+    else:
+        captions = _make_captions_fallback(script_text, duration)
 
     final_audio = voiceover
     if music_path and os.path.exists(music_path):
