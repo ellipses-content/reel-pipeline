@@ -30,6 +30,9 @@ jobs:
       - name: Install Python packages
         run: pip install -r requirements.txt
 
+      - name: Install Whisper for caption sync
+        run: pip install openai-whisper
+
       - name: Fix known MoviePy/Pillow compatibility issue
         run: |
           RESIZE_FILE=$(python -c "import moviepy.video.fx.resize as r; print(r.__file__)")
@@ -46,6 +49,7 @@ jobs:
           echo "NTFY_TOPIC=${{ secrets.NTFY_TOPIC }}" >> .env
           echo "YOUTUBE_CLIENT_ID=${{ secrets.YOUTUBE_CLIENT_ID }}" >> .env
           echo "YOUTUBE_CLIENT_SECRET=${{ secrets.YOUTUBE_CLIENT_SECRET }}" >> .env
+          echo "APPROVE_TRIGGER_TOKEN=${{ secrets.APPROVE_TRIGGER_TOKEN }}" >> .env
 
       - name: Recreate YouTube login token from secret
         run: echo "${{ secrets.YOUTUBE_TOKEN_B64 }}" | base64 -d > youtube_token.pickle
