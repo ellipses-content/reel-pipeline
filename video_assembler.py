@@ -213,7 +213,7 @@ def _make_captions_from_timestamps(word_timestamps: list, max_words: int = 8):
 
             caption_image = _draw_caption_image(text, TARGET_WIDTH - 100)
             caption = (
-                ImageClip(caption_image)
+                ImageClip(caption_image, ismask=False)
                 .set_position(("center", "center"))
                 .set_start(chunk_start)
                 .set_duration(duration)
@@ -248,7 +248,7 @@ def _make_captions_fallback(script_text: str, target_duration: float):
         chunk_duration = count * seconds_per_word
         caption_image = _draw_caption_image(chunk, TARGET_WIDTH - 100)
         caption = (
-            ImageClip(caption_image)
+            ImageClip(caption_image, ismask=False)
             .set_position(("center", "center"))
             .set_start(current_time)
             .set_duration(chunk_duration)
