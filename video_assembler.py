@@ -81,12 +81,10 @@ def _prepare_background(
         end_point = min(start_point + cut_duration, source.duration)
         segment = source.subclip(start_point, end_point)
 
-        zoom_start, zoom_end = 1.0, 1.08
-        segment = segment.resize(
-            lambda t, zs=zoom_start, ze=zoom_end, dur=segment.duration: (
-                zs + (ze - zs) * (t / dur)
-            )
-        )
+        # Static zoom - dynamic resize lambdas cause 2D grayscale frame
+        # crashes in MoviePy 1.0.3 during compositing, so we use a fixed
+        # 5% zoom and crop instead.
+        segment = segment.resize(1.05)
         segment = segment.crop(
             x_center=segment.w / 2,
             y_center=segment.h / 2,
@@ -156,10 +154,6 @@ def _draw_caption_image(text: str, width: int) -> np.ndarray:
 
 
 def _get_word_timestamps(voiceover_path: str, script_text: str) -> list:
-    """
-    Uses OpenAI's Whisper (running locally, free) to get the exact
-    timestamp of every word in the voiceover audio.
-    """
     try:
         import whisper
         print("      [captions] Running Whisper for precise caption sync...")
@@ -192,9 +186,6 @@ def _get_word_timestamps(voiceover_path: str, script_text: str) -> list:
 
 
 def _make_captions_from_timestamps(word_timestamps: list, max_words: int = 8):
-    """
-    Groups Whisper's word-level timestamps into caption-sized chunks.
-    """
     if not word_timestamps:
         return []
 
@@ -235,10 +226,6 @@ def _make_captions_from_timestamps(word_timestamps: list, max_words: int = 8):
 
 
 def _make_captions_fallback(script_text: str, target_duration: float):
-    """
-    Original word-count-based caption timing, used as a fallback if
-    Whisper isn't available or fails.
-    """
     raw_pieces = re.split(r'(?<=[.!?,])\s+', script_text.strip())
     raw_pieces = [p.strip() for p in raw_pieces if p.strip()]
 
