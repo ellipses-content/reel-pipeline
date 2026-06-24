@@ -32,7 +32,7 @@ from dotenv import load_dotenv
 from script_writer import write_script, suggest_visual_search_term, suggest_music_mood, suggest_voice
 from voice_generator import generate_voiceover
 from clip_finder import find_clips
-from real_image_finder import find_real_images, find_folklore_art
+from real_image_finder import find_real_images
 from music_finder import find_background_music
 from video_assembler import assemble_video
 from youtube_uploader import upload_short
@@ -82,7 +82,7 @@ def make_reel(
         search_term = suggest_visual_search_term(topic)
         print(f"      Auto-suggested visual search term: '{search_term}'")
 
-    real_images = find_real_images(topic, count=6)
+    real_images = find_real_images(topic)
     if real_images:
         print(f"      Found {len(real_images)} real documentation photos for '{topic}'")
     else:
