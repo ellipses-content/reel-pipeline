@@ -9,19 +9,16 @@ What this file does, in plain English:
     Claude based on the topic unless you manually override them.
 
 How to use it:
-    python make_reel.py --topic "weird ocean facts"
-    python make_reel.py --topic "bigfoot" --voice male_us_v2   (manual override)
-    python make_reel.py --topic "bigfoot" --no-upload           (skip YouTube)
+    python make_reel.py --topic "Chupacabra"
+    python make_reel.py --topic "Bigfoot" --voice male_us_v2
+    python make_reel.py --topic "Bigfoot" --no-upload
 
 What happens when you run it:
-    1. Writes a script, picks a voice, finds visuals and music - all
-       automatically based on the topic
+    1. Writes a script, picks a voice, finds visuals and music
     2. Assembles the finished video
-    3. Uploads it to YouTube as PRIVATE (not visible to anyone but you)
+    3. Uploads it to YouTube as PRIVATE
     4. Sends a push notification to your phone with a link to review it
-    5. You watch it, and if you're happy, run:
-           python approve.py <video_id>
-       to make it public. Nothing goes live without that explicit step.
+    5. You approve it with: python approve.py <video_id>
 """
 
 import argparse
@@ -83,15 +80,6 @@ def make_reel(
         print(f"      Auto-suggested visual search term: '{search_term}'")
 
     real_images = find_real_images(topic)
-    if real_images:
-        print(f"      Found {len(real_images)} real documentation photos for '{topic}'")
-    else:
-        print(f"      No real photos found for '{topic}' - trying folklore/artistic depictions...")
-        real_images = find_folklore_art(topic, count=6)
-        if real_images:
-            print(f"      Found {len(real_images)} folklore/artistic images")
-        else:
-            print(f"      No folklore art found either - using mood footage only")
 
     print(f"      Searching Pexels for: '{search_term}'")
     video_clips = find_clips(search_term, count=8)
@@ -141,12 +129,8 @@ if __name__ == "__main__":
     load_dotenv()
 
     parser = argparse.ArgumentParser(description="Generate a faceless short-form video.")
-    parser.add_argument("--topic", required=True, help="What the video should be about (drives the script)")
-    parser.add_argument(
-        "--visuals",
-        default=None,
-        help="Optional: a different search term for background clips. If omitted, auto-suggested.",
-    )
+    parser.add_argument("--topic", required=True, help="What the video should be about")
+    parser.add_argument("--visuals", default=None, help="Optional: override background clip search term")
     parser.add_argument(
         "--voice",
         default=None,
@@ -154,7 +138,7 @@ if __name__ == "__main__":
             "male_us", "female_us", "male_uk", "female_uk",
             "male_us_v2", "female_us_v2", "female_us_warm",
         ],
-        help="Optional: which voice to use. If omitted, auto-suggested based on topic.",
+        help="Optional: which voice to use. If omitted, auto-suggested.",
     )
     parser.add_argument(
         "--no-upload",
