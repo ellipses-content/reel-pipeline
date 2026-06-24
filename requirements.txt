@@ -13,3 +13,4 @@ python-dotenv                # loads your API keys from the .env file safely
 google-auth-oauthlib         # handles YouTube login/authorization
 google-api-python-client     # uploads videos to YouTub
 openai-whisper
+numpy<2.0

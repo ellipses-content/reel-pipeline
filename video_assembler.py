@@ -26,6 +26,14 @@ from moviepy.editor import (
     concatenate_videoclips,
     concatenate_audioclips,
 )
+# Patch MoviePy's blit function to handle grayscale frames
+import moviepy.video.tools.drawing as _drawing
+_original_blit = _drawing.blit
+def _patched_blit(im1, im2, pos=None, mask=None, ismask=False):
+    if im1.ndim == 2:
+        im1 = np.stack([im1, im1, im1], axis=2)
+    return _original_blit(im1, im2, pos=pos, mask=mask, ismask=ismask)
+_drawing.blit = _patched_blit
 
 TARGET_WIDTH = 1080
 TARGET_HEIGHT = 1920
