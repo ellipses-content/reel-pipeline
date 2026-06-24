@@ -152,7 +152,7 @@ def _draw_caption_image(text: str, width: int) -> np.ndarray:
                 draw.text((x + dx, y + dy), line, font=font, fill=(0, 0, 0, 255))
         draw.text((x, y), line, font=font, fill=(255, 255, 255, 255))
 
-    return np.array(img)
+    return np.array(img.convert("RGBA"))
 
 
 def _get_word_timestamps(voiceover_path: str, script_text: str) -> list:
