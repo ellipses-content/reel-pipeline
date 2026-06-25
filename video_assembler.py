@@ -67,7 +67,7 @@ def _prepare_background(
     video_paths: list,
     image_paths: list,
     target_duration: float,
-    cut_duration: float = 2.5,
+    cut_duration: float = 3.5,
 ):
     fitted_sources = _load_sources(video_paths, image_paths)
 

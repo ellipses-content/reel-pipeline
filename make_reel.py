@@ -86,7 +86,7 @@ def make_reel(
     real_images = find_real_images(topic)
 
     print(f"      Searching Pexels for: '{search_term}'")
-    video_clips = find_clips(search_term, count=8)
+    video_clips = find_clips(search_term, count=15)
     print(f"      Downloaded {len(video_clips)} video clips\n")
 
     print("Finding background music...")
