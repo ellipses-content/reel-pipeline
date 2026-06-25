@@ -6,3 +6,5 @@
 [2026-06-24 21:20:32] Completed successfully: 'The Yeti'
 [2026-06-25 11:12:46] Starting scheduled run - topic #7/60: 'The Skinwalker'
 [2026-06-25 11:23:05] Completed successfully: 'The Skinwalker'
+[2026-06-25 21:20:54] Starting scheduled run - topic #8/60: 'Dogman'
+[2026-06-25 21:30:55] Completed successfully: 'Dogman'
