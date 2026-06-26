@@ -12,3 +12,5 @@
 [2026-06-26 11:39:20] Completed successfully: 'Lake Champlain's Champ'
 [2026-06-26 21:11:13] Starting scheduled run - topic #10/60: 'The Flatwoods Monster'
 [2026-06-26 21:21:32] Completed successfully: 'The Flatwoods Monster'
+[2026-06-26 22:43:33] Starting scheduled run - topic #11/60: 'The Dover Demon'
+[2026-06-26 22:50:05] Completed successfully: 'The Dover Demon'
