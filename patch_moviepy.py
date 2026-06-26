@@ -44,3 +44,21 @@ def blit(im1, im2, pos=None, mask=None, ismask=False):
 with open(d.__file__, 'w') as f:
     f.write(patch)
 print('drawing.py patched successfully')
+
+
+# --- resize.py: Pillow >= 10 removed Image.ANTIALIAS ---------------------
+# moviepy 1.0.3 still calls Image.ANTIALIAS, which was deprecated in Pillow 9
+# and removed in Pillow 10. Image.LANCZOS is the identical filter under the
+# new name and is still available in current Pillow, so swap it in.
+import moviepy.video.fx.resize as r
+
+with open(r.__file__, 'r') as f:
+    resize_src = f.read()
+
+if 'Image.ANTIALIAS' in resize_src:
+    resize_src = resize_src.replace('Image.ANTIALIAS', 'Image.LANCZOS')
+    with open(r.__file__, 'w') as f:
+        f.write(resize_src)
+    print('resize.py patched successfully')
+else:
+    print('resize.py already patched (no Image.ANTIALIAS found)')

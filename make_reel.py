@@ -56,6 +56,10 @@ def make_reel(
 ):
     print(f"\n=== Building a reel about: '{topic}' ===\n")
 
+    # The pipeline writes intermediate artifacts (voiceover, etc.) into temp/.
+    # Create it up front so a fresh checkout doesn't crash on first run.
+    os.makedirs("temp", exist_ok=True)
+
     print("[1/5] Writing script...")
     script = write_script(topic)
     print(f"      Script ready ({len(script.split())} words):\n")
