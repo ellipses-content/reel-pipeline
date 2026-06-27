@@ -16,3 +16,5 @@
 [2026-06-26 22:50:05] Completed successfully: 'The Dover Demon'
 [2026-06-27 09:36:16] Starting scheduled run - topic #12/60: 'The Beast of Bray Road'
 [2026-06-27 09:43:32] Completed successfully: 'The Beast of Bray Road'
+[2026-06-27 20:19:24] Starting scheduled run - topic #13/60: 'Ogopogo'
+[2026-06-27 20:26:09] Completed successfully: 'Ogopogo'
