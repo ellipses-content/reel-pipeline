@@ -22,6 +22,7 @@ again.
 
 import os
 import pickle
+import anthropic
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -68,6 +69,80 @@ def _get_authenticated_service():
             pickle.dump(creds, token)
 
     return build("youtube", "v3", credentials=creds)
+
+
+# A core set of hashtags that fits every cryptid/horror Short on the
+# channel. The topic itself is added on top of these as its own hashtag.
+BASE_HASHTAGS = [
+    "#cryptid", "#paranormal", "#scary", "#horror",
+    "#unexplained", "#creepy", "#mystery", "#shorts",
+]
+
+
+def _topic_hashtag(topic: str) -> str:
+    """Turns a topic like 'El Chupacabra' into a clean '#ElChupacabra' tag."""
+    cleaned = "".join(ch for ch in topic if ch.isalnum() or ch.isspace())
+    return "#" + "".join(word.capitalize() for word in cleaned.split())
+
+
+def generate_seo_metadata(topic: str) -> tuple:
+    """
+    Uses Claude to write an engaging, clickable YouTube title for the
+    topic, then builds an SEO-friendly description packed with relevant
+    hashtags. Returns (title, description).
+
+    The title is always forced to end with '#shorts' so YouTube treats the
+    video as a Short, and the description leads with the title before the
+    hashtag block.
+    """
+    client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+
+    prompt = (
+        "You write titles for a horror and cryptozoology YouTube Shorts channel.\n"
+        f"The video is about: {topic}\n\n"
+        "Write ONE engaging, clickable, scroll-stopping title for this Short.\n\n"
+        "Rules:\n"
+        "- Make it punchy and curiosity-driving, like a viral Shorts title\n"
+        "- Good examples of the style: 'The REAL Chupacabra Story', "
+        "'What Lives In The Woods?', 'Nobody Survives Lake Champlain'\n"
+        "- It MUST include the topic name or a clear reference to it\n"
+        "- Keep it under 70 characters\n"
+        "- Title Case or natural casing, you may use ALL CAPS on one key word for emphasis\n"
+        "- No quotes, no emojis, no hashtags, no explanation\n"
+        "- Respond with ONLY the title text, nothing else\n"
+    )
+
+    try:
+        message = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=40,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        title_core = message.content[0].text.strip().strip('"').strip()
+    except Exception:
+        # If the API call fails for any reason, fall back to a simple
+        # title so the upload still succeeds.
+        title_core = f"The REAL {topic.title()} Story"
+
+    if not title_core:
+        title_core = f"The REAL {topic.title()} Story"
+
+    # Force the #shorts tag onto the end of the title.
+    title = f"{title_core} #shorts"
+    # YouTube titles are capped at 100 characters.
+    title = title[:100]
+
+    # Build the description: lead with the title, a short hook line, then
+    # the hashtag block (topic hashtag first, then the standard set).
+    hashtags = [_topic_hashtag(topic)] + [t for t in BASE_HASHTAGS if t != "#shorts"] + ["#shorts"]
+    description = (
+        f"{title_core}\n\n"
+        "Real stories, sightings, and unexplained mysteries from the world "
+        "of cryptids and the paranormal. Watch with the lights on.\n\n"
+        + " ".join(hashtags)
+    )
+
+    return title, description
 
 
 def upload_short(video_path: str, title: str, description: str = "", privacy: str = "private") -> str:

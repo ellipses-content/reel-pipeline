@@ -32,7 +32,7 @@ from clip_finder import find_clips
 from real_image_finder import find_real_images
 from music_finder import find_background_music
 from video_assembler import assemble_video
-from youtube_uploader import upload_short
+from youtube_uploader import upload_short, generate_seo_metadata
 from notifier import notify_video_ready
 
 
@@ -113,11 +113,12 @@ def make_reel(
         return final_path
 
     print("[5/5] Uploading to YouTube as private...")
-    video_title = topic.title()
+    video_title, video_description = generate_seo_metadata(topic)
+    print(f"      SEO title: '{video_title}'")
     video_url = upload_short(
         final_path,
         title=video_title,
-        description=f"Generated automatically. Topic: {topic}",
+        description=video_description,
         privacy="private",
     )
     video_id = video_url.rstrip("/").split("/")[-1]
