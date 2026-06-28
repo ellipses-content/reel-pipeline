@@ -18,3 +18,5 @@
 [2026-06-27 09:43:32] Completed successfully: 'The Beast of Bray Road'
 [2026-06-27 20:19:24] Starting scheduled run - topic #13/60: 'Ogopogo'
 [2026-06-27 20:26:09] Completed successfully: 'Ogopogo'
+[2026-06-28 22:00:29] Starting scheduled run - topic #14/60: 'The Mongolian Death Worm'
+[2026-06-28 22:07:19] Completed successfully: 'The Mongolian Death Worm'
