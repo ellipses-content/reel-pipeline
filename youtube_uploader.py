@@ -22,7 +22,6 @@ again.
 
 import os
 import pickle
-import anthropic
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -95,6 +94,10 @@ def generate_seo_metadata(topic: str) -> tuple:
     video as a Short, and the description leads with the title before the
     hashtag block.
     """
+    # Imported lazily so modules that only need the auth/upload helpers
+    # (e.g. approve.py) don't require the anthropic package to be installed.
+    import anthropic
+
     client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
     prompt = (
