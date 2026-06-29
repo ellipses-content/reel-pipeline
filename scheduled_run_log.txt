@@ -20,3 +20,5 @@
 [2026-06-27 20:26:09] Completed successfully: 'Ogopogo'
 [2026-06-28 22:00:29] Starting scheduled run - topic #14/60: 'The Mongolian Death Worm'
 [2026-06-28 22:07:19] Completed successfully: 'The Mongolian Death Worm'
+[2026-06-29 14:54:21] Starting scheduled run - topic #15/60: 'The Wendigo'
+[2026-06-29 15:02:04] Completed successfully: 'The Wendigo'
