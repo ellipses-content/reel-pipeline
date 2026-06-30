@@ -17,6 +17,7 @@ What you need for this to work:
 """
 
 import asyncio
+import re
 import edge_tts
 
 
@@ -33,6 +34,62 @@ VOICES = {
 }
 
 
+# --- Horror tuning -----------------------------------------------------------
+# These shape edge-tts delivery so it sounds like a tense late-night story
+# instead of a flat read-aloud. Tweak by ear if a voice sounds off:
+#   RATE  - speaking speed. Negative = slower/more deliberate (more dramatic).
+#   PITCH - voice pitch in Hz. Negative = deeper/more ominous. Keep it subtle;
+#           large shifts sound unnatural or "demonic".
+RATE = "-8%"
+PITCH = "-4Hz"
+
+
+# A short sentence (this many words or fewer) is treated as a punchy beat
+# and gets a weightier pause after it. Longer narrative sentences keep their
+# natural pacing so the whole thing doesn't drag.
+PUNCHY_MAX_WORDS = 5
+
+
+def _add_dramatic_pauses(text: str) -> str:
+    """
+    Inserts short silent beats so the narration breathes at tense moments.
+
+    edge-tts can't take SSML <break> tags, but it DOES pause on punctuation -
+    and an ellipsis produces a longer, weightier pause than a period. We add
+    those pauses only where drama lives: right after the opening hook, and
+    after short punchy sentences (the scary one-liners). Normal-length
+    sentences are left alone so the pacing doesn't drag. Ellipses are silent,
+    so Whisper caption sync (which transcribes spoken words) is unaffected.
+    """
+    text = text.strip()
+    if not text:
+        return text
+
+    # Split into sentences, keeping their ending punctuation.
+    parts = re.findall(r"\s*(.+?)([.!?]+|$)", text, flags=re.DOTALL)
+    sentences = [(body.strip(), end) for body, end in parts if body.strip()]
+    if not sentences:
+        return text
+
+    out = []
+    for i, (body, end) in enumerate(sentences):
+        is_hook = (i == 0)
+        is_punchy = len(body.split()) <= PUNCHY_MAX_WORDS
+        is_last = (i == len(sentences) - 1)
+
+        # Hook and punchy one-liners get a dramatic trailing pause; others
+        # keep their normal punctuation. Never trail the final sentence.
+        if (is_hook or is_punchy) and not is_last and end in (".", "!", "?", ""):
+            out.append(f"{body}...")
+        else:
+            out.append(f"{body}{end}")
+
+    text = " ".join(out)
+    # Collapse any accidental run of dots (e.g. "....") to a clean ellipsis.
+    text = re.sub(r"\.{4,}", "...", text)
+    return text
+
+
 async def _generate(text: str, voice: str, output_path: str):
     """
     The actual work happens here. This is 'async' (asynchronous) because
@@ -41,7 +98,7 @@ async def _generate(text: str, voice: str, output_path: str):
     You don't need to understand async deeply - just know that
     generate_voiceover() below handles starting/stopping it for you.
     """
-    communicator = edge_tts.Communicate(text, voice)
+    communicator = edge_tts.Communicate(text, voice, rate=RATE, pitch=PITCH)
     await communicator.save(output_path)
 
 
@@ -58,7 +115,8 @@ def generate_voiceover(text: str, output_path: str, voice: str = "male_us") -> s
         The output_path string, so the next step knows where to find the file.
     """
     voice_id = VOICES.get(voice, VOICES["male_us"])
-    asyncio.run(_generate(text, voice_id, output_path))
+    spoken_text = _add_dramatic_pauses(text)
+    asyncio.run(_generate(spoken_text, voice_id, output_path))
     return output_path
 
 
