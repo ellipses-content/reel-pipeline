@@ -65,24 +65,27 @@ def _add_dramatic_pauses(text: str) -> str:
     if not text:
         return text
 
-    # Split into sentences, keeping their ending punctuation.
-    parts = re.findall(r"\s*(.+?)([.!?]+|$)", text, flags=re.DOTALL)
-    sentences = [(body.strip(), end) for body, end in parts if body.strip()]
+    # Split into sentences only at real boundaries: terminal punctuation
+    # followed by whitespace and a capital letter. This deliberately does NOT
+    # split inside abbreviations like "a.m.", "U.S.", or "Dr." because those
+    # periods aren't followed by a space + capital.
+    sentences = re.split(r"(?<=[.!?])\s+(?=[A-Z])", text)
+    sentences = [s.strip() for s in sentences if s.strip()]
     if not sentences:
         return text
 
     out = []
-    for i, (body, end) in enumerate(sentences):
+    for i, body in enumerate(sentences):
         is_hook = (i == 0)
         is_punchy = len(body.split()) <= PUNCHY_MAX_WORDS
         is_last = (i == len(sentences) - 1)
 
         # Hook and punchy one-liners get a dramatic trailing pause; others
         # keep their normal punctuation. Never trail the final sentence.
-        if (is_hook or is_punchy) and not is_last and end in (".", "!", "?", ""):
-            out.append(f"{body}...")
+        if (is_hook or is_punchy) and not is_last:
+            out.append(re.sub(r"[.!?]+$", "...", body) if re.search(r"[.!?]$", body) else body + "...")
         else:
-            out.append(f"{body}{end}")
+            out.append(body)
 
     text = " ".join(out)
     # Collapse any accidental run of dots (e.g. "....") to a clean ellipsis.
