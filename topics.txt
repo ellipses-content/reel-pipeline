@@ -68,3 +68,107 @@ The Caddo Lake Monster
 The Pukwudgie
 The Slide-Rock Bolter
 The Wild Man of the Navidad
+
+# --- Batch 2: 100 more cryptids (added to extend the rotation) ---
+# Appended to the end so existing topic indices (and the progress counter)
+# are unchanged. Trim any you don't want.
+The Yowie
+Orang Pendek
+The Kongamato
+The Emela-ntouka
+The Mapinguari
+The Con Rit
+The Buru
+The Megalania
+The Thylacine
+The Ningen
+The Lusca
+The Encantado
+The Jackalope
+The Squonk
+The Hidebehind
+The Agropelter
+The Teakettler
+The Dingonek
+The Inkanyamba
+The Mamlambo
+The Tokoloshe
+The Impundulu
+The Gambo
+The Kappa
+The Tsuchinoko
+The Hibagon
+The Akkorokamui
+The Yeren
+The Almas
+The Barmanou
+The Mande Barung
+The Batutut
+The Lake Tianchi Monster
+The Ebu Gogo
+The Orang Mawas
+The Tikbalang
+The Aswang
+The Manananggal
+The Sigbin
+The Burrunjor
+The Hawkesbury River Monster
+The Moehau
+The Waitoreke
+The Taniwha
+The Yara-ma-yha-who
+The Brosno Dragon
+The Lagarfljot Worm
+The Storsjo Monster
+The Selma
+The Morag
+Black Shuck
+Spring-heeled Jack
+The Surrey Puma
+The Dobhar-chu
+The Lambton Worm
+The Beast of Dartmoor
+The Dahu
+The Wolpertinger
+The Nuckelavee
+The Each-uisge
+The Lindworm
+The Mono Grande
+The Ucumar
+The Minhocao
+The Nahuelito
+The Peuchen
+The Camahueto
+The Trauco
+The Colo Colo
+The Ahuizotl
+The Onza
+The Sisimito
+The Cadejo
+El Silbon
+The Lobizon
+The Iemisch
+The Fouke Monster
+Momo the Missouri Monster
+The Lake Worth Monster
+The Beast of Busco
+The Bear Lake Monster
+The Flathead Lake Monster
+The Iliamna Lake Monster
+The Nain Rouge
+The Not Deer
+The Lechuza
+The Cactus Cat
+The Hoop Snake
+The Fur-Bearing Trout
+The Gowrow
+The Sidehill Gouger
+The Montauk Monster
+The Snarly Yow
+The Char-Man
+The Shunka Warakin
+Bessie the Lake Erie Monster
+The Thetis Lake Monster
+Steller's Sea Ape
+The Nguoi Rung
+The Sea Monk
