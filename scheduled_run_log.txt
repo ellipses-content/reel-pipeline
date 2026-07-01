@@ -30,3 +30,5 @@
 [2026-06-30 18:21:59] Completed successfully: 'The Honey Island Swamp Monster'
 [2026-06-30 21:25:04] Starting scheduled run - topic #19/160: 'The Pope Lick Monster'
 [2026-06-30 21:32:44] Completed successfully: 'The Pope Lick Monster'
+[2026-07-01 21:14:11] Starting scheduled run - topic #20/160: 'The Goatman'
+[2026-07-01 21:21:07] Completed successfully: 'The Goatman'
