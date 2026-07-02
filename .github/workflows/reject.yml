@@ -1,0 +1,42 @@
+name: Reject and Delete Video
+
+on:
+  repository_dispatch:
+    types: [reject_video]
+
+jobs:
+  reject:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install required packages
+        run: pip install google-auth-oauthlib google-api-python-client python-dotenv
+
+      - name: Recreate YouTube credentials from secrets
+        run: |
+          echo "YOUTUBE_CLIENT_ID=${{ secrets.YOUTUBE_CLIENT_ID }}" >> .env
+          echo "YOUTUBE_CLIENT_SECRET=${{ secrets.YOUTUBE_CLIENT_SECRET }}" >> .env
+          echo "${{ secrets.YOUTUBE_TOKEN_B64 }}" | base64 -d > youtube_token.pickle
+
+      - name: Reject (delete) the video
+        run: python reject.py "${{ github.event.client_payload.video_id }}"
+
+      - name: Send failure alert if rejection failed
+        if: failure()
+        run: |
+          curl -H "Title: Rejection FAILED" \
+               -H "Priority: urgent" \
+               -H "Tags: warning" \
+               -d "Rejecting video ${{ github.event.client_payload.video_id }} failed. Check the Actions tab for details." \
+               "https://ntfy.sh/${{ secrets.NTFY_TOPIC }}"

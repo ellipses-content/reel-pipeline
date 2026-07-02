@@ -34,10 +34,33 @@ GITHUB_REPO = "ellipses-content/reel-pipeline"
 GITHUB_DISPATCH_URL = f"https://api.github.com/repos/{GITHUB_REPO}/dispatches"
 
 
+def _dispatch_action(label: str, event_type: str, video_id: str, github_token: str) -> dict:
+    """
+    Builds one ntfy 'http' action button that fires a GitHub
+    repository_dispatch event (which triggers a workflow to act on the video).
+    """
+    return {
+        "action": "http",
+        "label": label,
+        "url": GITHUB_DISPATCH_URL,
+        "method": "POST",
+        "headers": {
+            "Authorization": f"Bearer {github_token}",
+            "Accept": "application/vnd.github+json",
+        },
+        "body": (
+            f'{{"event_type":"{event_type}",'
+            f'"client_payload":{{"video_id":"{video_id}"}}}}'
+        ),
+        "clear": True,
+    }
+
+
 def notify_video_ready(video_title: str, video_url: str, video_id: str):
     """
-    Sends a push notification that a video is ready for review, with a
-    real tap-to-approve action button.
+    Sends a push notification that a video is ready for review, with real
+    tap-to-act buttons: Approve & Publish (private -> public) and Reject
+    (delete the private video).
     """
     topic = os.environ.get("NTFY_TOPIC")
     if not topic:
@@ -51,38 +74,30 @@ def notify_video_ready(video_title: str, video_url: str, video_id: str):
         f"Watch: {video_url}"
     )
 
-    headers = {
-        "Title": "Video ready for approval",
-        "Priority": "default",
-        "Tags": "movie_camera",
-        "Click": video_url,
+    # ntfy is published as JSON so the notification can carry multiple action
+    # buttons (the header form only reliably handles one complex http action).
+    payload = {
+        "topic": topic,
+        "title": "Video ready for approval",
+        "message": message,
+        "priority": 3,
+        "tags": ["movie_camera"],
+        "click": video_url,
     }
 
     if github_token:
-        action_body = (
-            f'{{"event_type":"approve_video",'
-            f'"client_payload":{{"video_id":"{video_id}"}}}}'
-        )
-        headers["Actions"] = (
-            f"http, Approve & Publish, {GITHUB_DISPATCH_URL}, "
-            f"method=POST, "
-            f'headers.Authorization="Bearer {github_token}", '
-            f"headers.Accept=application/vnd.github+json, "
-            f'body=\'{action_body}\', clear=true'
-        )
+        payload["actions"] = [
+            _dispatch_action("Approve & Publish", "approve_video", video_id, github_token),
+            _dispatch_action("Reject & Delete", "reject_video", video_id, github_token),
+        ]
     else:
-        message += (
-            f"\n\nTo approve and publish, run:\n"
-            f"python approve.py {video_id}"
+        payload["message"] += (
+            f"\n\nTo approve:  python approve.py {video_id}"
+            f"\nTo reject:   python reject.py {video_id}"
         )
 
     try:
-        requests.post(
-            f"{NTFY_BASE}/{topic}",
-            data=message.encode("utf-8"),
-            headers=headers,
-            timeout=10,
-        )
+        requests.post(NTFY_BASE, json=payload, timeout=10)
         print(f"      Notification sent to your phone")
     except Exception as e:
         print(f"      [debug] Failed to send notification: {e}")
